@@ -23,10 +23,14 @@ def create_app() -> Flask:
             app.logger.error(str(e))
 
     # Blueprints
-    from app.routes.auth import auth_bp
-    from app.routes.admin import admin_bp
+    from app.routes.auth   import auth_bp
+    from app.routes.admin  import admin_bp
+    from app.routes.search import search_bp
+    from app.routes.stats  import stats_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(search_bp)
+    app.register_blueprint(stats_bp)
 
     # Root health-check
     @app.route("/api/health")

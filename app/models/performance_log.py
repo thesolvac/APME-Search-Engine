@@ -60,3 +60,31 @@ class PerformanceLogModel:
         if "created_at" in log:
             log["created_at"] = log["created_at"].isoformat()
         return log
+
+    # ── Analytics aggregations ────────────────────────────────────────────────
+
+    @staticmethod
+    def get_algorithm_breakdown(user_id: str = "") -> list[dict]:
+        """Per-algorithm avg timing and match stats, optionally scoped to one user."""
+        match_stage = {"$match": {"user_id": user_id}} if user_id else {"$match": {}}
+        results = list(PerformanceLogModel._col().aggregate([
+            match_stage,
+            {"$group": {
+                "_id":                "$algorithm",
+                "count":              {"$sum": 1},
+                "avg_duration_ms":    {"$avg": "$duration_ms"},
+                "avg_matches":        {"$avg": "$matches_count"},
+                "avg_text_size_bytes": {"$avg": "$text_size_bytes"},
+            }},
+            {"$sort": {"count": -1}},
+        ]))
+        return [
+            {
+                "algorithm":           r["_id"],
+                "count":               r["count"],
+                "avg_duration_ms":     round(r["avg_duration_ms"]     or 0.0, 4),
+                "avg_matches":         round(r["avg_matches"]          or 0.0, 2),
+                "avg_text_size_bytes": round(r["avg_text_size_bytes"]  or 0.0, 0),
+            }
+            for r in results
+        ]
