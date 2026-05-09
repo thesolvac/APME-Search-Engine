@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Search — APME{% endblock %}
+
+{% block head %}
+<style>
+  .mode-btn { transition:all .2s; border:1px solid var(--c-border); }
+  .mode-btn.active {
+    border-color:var(--c-cyan); color:var(--c-cyan);
+    background:linear-gradient(135deg,#00d4ff12,#8b5cf612);
+  }
+  .alg-pill {
+    cursor:pointer; border:1px solid var(--c-border); border-radius:20px;
+    padding:4px 14px; font-size:.78rem; font-family:monospace;
+    transition:all .2s; color:var(--c-t2);
+  }
+  .alg-pill:hover  { border-color:var(--c-cyan); color:var(--c-cyan); }
+  .alg-pill.active { background:var(--c-cyan); color:#000; border-color:var(--c-cyan); font-weight:700; }
+  .dropzone {
+    border:2px dashed var(--c-border); border-radius:12px; transition:all .2s;
+    cursor:pointer;
+  }
+  .dropzone.drag-over { border-color:var(--c-cyan); background:#00d4ff08; }
+  .ac-item { padding:8px 14px; cursor:pointer; font-family:monospace; font-size:.85rem; }
+  .ac-item:hover { background:var(--c-bg3); color:var(--c-cyan); }
+  .trend-chip {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 14px; border-radius:20px; font-size:.78rem;
+    border:1px solid var(--c-border); color:var(--c-t2); cursor:pointer;
+    transition:all .2s;
+  }
+  .trend-chip:hover { border-color:var(--c-cyan); color:var(--c-cyan); }
+  textarea { resize:vertical; line-height:1.7; font-family:monospace; font-size:.875rem; }
+  .hero-glow { filter:drop-shadow(0 0 40px #8b5cf640); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div data-page="search" id="page" class="max-w-4xl mx-auto px-6 py-10">
+
+  <!-- Hero -->
+  <div class="text-center mb-10 relative">
+    <div class="flex justify-center mb-5 hero-glow">
+      <img src="{{ url_for('static', filename='img/hero.svg') }}" alt="" class="w-72 h-auto opacity-80"/>
+    </div>
+    <h1 class="text-4xl font-extrabold mb-2">
+      <span class="grad-text">Adaptive Pattern</span> Search
+    </h1>
+    <p class="text-t2 text-sm max-w-md mx-auto">
+      High-performance exact, fuzzy &amp; multi-pattern matching with automatic algorithm selection.
+    </p>
+  </div>
+
+  <!-- Search card -->
+  <div class="card card-glow p-6 mb-6">
+
+    <!-- Mode switcher -->
+    <div class="flex gap-3 mb-5">
+      <button class="mode-btn active rounded-lg px-4 py-2 text-sm font-semibold" id="mode-text"
+              onclick="setMode('text')">Text Input</button>
+      <button class="mode-btn rounded-lg px-4 py-2 text-sm font-semibold" id="mode-file"
+              onclick="setMode('file')">File Upload</button>
+      <button class="mode-btn rounded-lg px-4 py-2 text-sm font-semibold" id="mode-multi"
+              onclick="setMode('multi')">Multi-Pattern</button>
+    </div>
+
+    <!-- Text input panel -->
+    <div id="panel-text">
+      <textarea id="text-input" rows="6"
+                class="w-full px-4 py-3 mb-3"
+                placeholder="Paste or type your text here…"></textarea>
+    </div>
+
+    <!-- File upload panel -->
+    <div id="panel-file" class="hidden mb-3">
+      <div class="dropzone p-10 text-center" id="dropzone"
+           onclick="document.getElementById('file-input').click()"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <input type="file" id="file-input" class="hidden"
+               accept=".txt,.log,.csv,.tsv,.md,.json,.xml,.html,.py,.js"
+               onchange="onFileChange(event)"/>
+        <div id="drop-placeholder">
+          <svg class="w-10 h-10 mx-auto mb-3 text-t3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <p class="text-t2 text-sm">Drop a file here or <span class="text-cyan">browse</span></p>
+          <p class="text-t3 text-xs mt-1">.txt .log .csv .md .json .xml .html .py .js</p>
+        </div>
+        <div id="drop-selected" class="hidden">
+          <svg class="w-8 h-8 mx-auto mb-2 text-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <p id="drop-filename" class="text-cyan font-mono text-sm font-bold"></p>
+          <p id="drop-filesize" class="text-t3 text-xs mt-1"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multi-pattern panel -->
+    <div id="panel-multi" class="hidden mb-3">
+      <textarea id="text-input-multi" rows="4"
+                class="w-full px-4 py-3 mb-3"
+                placeholder="Text to search…"></textarea>
+      <textarea id="multi-patterns" rows="3"
+                class="w-full px-4 py-3"
+                placeholder="One pattern per line…"></textarea>
+    </div>
+
+    <!-- Pattern + options row -->
+    <div class="flex gap-3 mb-4 relative" id="pattern-row">
+      <div class="flex-1 relative">
+        <input type="text" id="pattern-input" placeholder="Search pattern…"
+               class="w-full px-4 py-2.5"
+               oninput="onPatternInput(this.value)" autocomplete="off"/>
+        <!-- Autocomplete dropdown -->
+        <div id="ac-dropdown"
+             class="hidden absolute top-full left-0 right-0 mt-1 z-50 card shadow-2xl max-h-48 overflow-y-auto rounded-lg">
+        </div>
+      </div>
+      <select id="alg-select" class="px-3 py-2.5 text-sm hidden">
+        <option value="AUTO">AUTO</option>
+        <option value="KMP">KMP</option>
+        <option value="Boyer-Moore">Boyer-Moore</option>
+        <option value="Rabin-Karp">Rabin-Karp</option>
+        <option value="Shift-Or">Shift-Or</option>
+      </select>
+    </div>
+
+    <!-- Algorithm pills -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <span class="text-xs text-t3 self-center mr-1">Algorithm:</span>
+      <button class="alg-pill active" data-alg="AUTO"         onclick="setAlg(this)">AUTO</button>
+      <button class="alg-pill"        data-alg="KMP"          onclick="setAlg(this)">KMP</button>
+      <button class="alg-pill"        data-alg="Boyer-Moore"  onclick="setAlg(this)">Boyer-Moore</button>
+      <button class="alg-pill"        data-alg="Rabin-Karp"   onclick="setAlg(this)">Rabin-Karp</button>
+      <button class="alg-pill"        data-alg="Shift-Or"     onclick="setAlg(this)">Shift-Or</button>
+    </div>
+
+    <!-- Fuzzy toggle -->
+    <label class="flex items-center gap-2 mb-5 cursor-pointer w-fit">
+      <div class="relative">
+        <input type="checkbox" id="fuzzy-toggle" class="sr-only peer"/>
+        <div class="w-10 h-5 bg-bg3 border border-[#2e2e50] rounded-full peer
+                    peer-checked:bg-purple/40 transition-colors"></div>
+        <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-t3 rounded-full
+                    peer-checked:translate-x-5 peer-checked:bg-purple transition-all"></div>
+      </div>
+      <span class="text-sm text-t2">Fuzzy match</span>
+      <span class="text-xs text-t3">(1 edit distance)</span>
+    </label>
+
+    <!-- Search button -->
+    <button onclick="doSearch()" id="search-btn"
+            class="btn-primary w-full py-3 text-base flex items-center justify-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+      </svg>
+      Search
+    </button>
+  </div>
+
+  <!-- Trending searches -->
+  <div class="mb-2">
+    <p class="text-xs text-t3 uppercase tracking-wider mb-3">Trending</p>
+    <div class="flex flex-wrap gap-2" id="trending-row">
+      <div class="skeleton h-8 rounded-full w-20"></div>
+      <div class="skeleton h-8 rounded-full w-28"></div>
+      <div class="skeleton h-8 rounded-full w-16"></div>
+      <div class="skeleton h-8 rounded-full w-24"></div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}

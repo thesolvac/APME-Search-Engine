@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}APME Search Engine{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg0:'#080812', bg1:'#0f0f1e', bg2:'#1a1a30', bg3:'#252540',
+            border:'#2e2e50', bright:'#4040a0',
+            t1:'#e8eaf6', t2:'#9090bb', t3:'#5a5a8a',
+            cyan:'#00d4ff', purple:'#8b5cf6', emerald:'#10d98a',
+            danger:'#ff4d6d', warn:'#ffd166', orange:'#ff9a3c',
+          },
+          fontFamily: { mono: ['"Courier New"', 'Courier', 'monospace'] },
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --c-bg0:#080812; --c-bg1:#0f0f1e; --c-bg2:#1a1a30; --c-bg3:#252540;
+      --c-border:#2e2e50; --c-bright:#4040a0;
+      --c-t1:#e8eaf6;  --c-t2:#9090bb;  --c-t3:#5a5a8a;
+      --c-cyan:#00d4ff; --c-purple:#8b5cf6; --c-green:#10d98a;
+      --c-red:#ff4d6d;  --c-warn:#ffd166;   --c-orange:#ff9a3c;
+    }
+    html,body { background:var(--c-bg0); color:var(--c-t1); font-family:'Inter','Segoe UI',sans-serif; }
+    ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:var(--c-bg1); }
+    ::-webkit-scrollbar-thumb { background:var(--c-bright); border-radius:3px; }
+
+    /* Cards */
+    .card { background:var(--c-bg2); border:1px solid var(--c-border); border-radius:12px; }
+    .card-glow { box-shadow:0 0 24px #00d4ff18; }
+
+    /* Gradient text */
+    .grad-text {
+      background: linear-gradient(135deg,var(--c-cyan),var(--c-purple));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background:linear-gradient(135deg,var(--c-cyan),var(--c-purple));
+      color:#fff; border:none; cursor:pointer; border-radius:8px;
+      font-weight:600; transition:opacity .2s,transform .1s;
+    }
+    .btn-primary:hover { opacity:.88; } .btn-primary:active { transform:scale(.97); }
+    .btn-ghost {
+      background:transparent; color:var(--c-t2); border:1px solid var(--c-border);
+      cursor:pointer; border-radius:8px; transition:border-color .2s,color .2s;
+    }
+    .btn-ghost:hover { border-color:var(--c-cyan); color:var(--c-cyan); }
+
+    /* Nav */
+    nav { background:var(--c-bg1); border-bottom:1px solid var(--c-border); backdrop-filter:blur(12px); }
+    .nav-link { color:var(--c-t2); transition:color .2s; text-decoration:none; font-size:.875rem; }
+    .nav-link:hover,.nav-link.active { color:var(--c-cyan); }
+    .nav-link.active { border-bottom:2px solid var(--c-cyan); }
+
+    /* Inputs */
+    input,textarea,select {
+      background:var(--c-bg3); border:1px solid var(--c-border); color:var(--c-t1);
+      border-radius:8px; outline:none; transition:border-color .2s,box-shadow .2s;
+    }
+    input:focus,textarea:focus,select:focus {
+      border-color:var(--c-cyan); box-shadow:0 0 0 3px #00d4ff22;
+    }
+    input::placeholder,textarea::placeholder { color:var(--c-t3); }
+    select option { background:var(--c-bg2); }
+
+    /* Badge */
+    .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:.7rem; font-weight:600; }
+
+    /* Table */
+    table { border-collapse:collapse; width:100%; }
+    th { color:var(--c-t3); font-size:.7rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase;
+         padding:10px 14px; border-bottom:1px solid var(--c-border); text-align:left; }
+    td { padding:10px 14px; border-bottom:1px solid var(--c-border)18; font-size:.875rem; color:var(--c-t2); }
+    tr:hover td { background:var(--c-bg3); }
+
+    /* Toast */
+    #toast-wrap { position:fixed; bottom:24px; right:24px; z-index:9999;
+                  display:flex; flex-direction:column; gap:8px; max-width:360px; pointer-events:none; }
+    .toast-item { opacity:0; transform:translateX(20px); transition:opacity .25s,transform .25s; }
+    .toast-item.show { opacity:1; transform:translateX(0); }
+
+    /* Animated background dots */
+    .bg-dots { background-image:radial-gradient(circle,#2e2e58 1px,transparent 1px);
+                background-size:32px 32px; }
+
+    /* Skeleton loader */
+    .skeleton { background:linear-gradient(90deg,var(--c-bg3) 25%,var(--c-border) 50%,var(--c-bg3) 75%);
+                background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:6px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* Algorithm colour coding */
+    .alg-kmp     { color:#00d4ff; border-color:#00d4ff44; }
+    .alg-bm      { color:#8b5cf6; border-color:#8b5cf644; }
+    .alg-rk      { color:#ffd166; border-color:#ffd16644; }
+    .alg-so      { color:#10d98a; border-color:#10d98a44; }
+    .alg-ac      { color:#ff9a3c; border-color:#ff9a3c44; }
+    .alg-auto    { color:#ff4d6d; border-color:#ff4d6d44; }
+    .alg-fuzzy   { color:#c084fc; border-color:#c084fc44; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="h-full flex flex-col bg-dots">
+
+<!-- ── Navigation ─────────────────────────────────────────────── -->
+<nav class="sticky top-0 z-50 px-6 h-14 flex items-center justify-between" id="main-nav">
+  <a href="/search" class="flex items-center gap-3 shrink-0">
+    <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="APME" class="h-8 w-auto"/>
+  </a>
+
+  <div class="hidden md:flex items-center gap-6" id="nav-links">
+    <a href="/search"    class="nav-link" data-page="search">Search</a>
+    <a href="/dashboard" class="nav-link" data-page="dashboard">Dashboard</a>
+    <a href="/admin"     class="nav-link admin-only hidden" data-page="admin">Admin</a>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <div id="nav-user" class="hidden items-center gap-3">
+      <span id="nav-username" class="text-sm text-t2 font-mono"></span>
+      <button onclick="logout()"
+              class="btn-ghost text-xs px-3 py-1.5">Log out</button>
+    </div>
+    <div id="nav-guest">
+      <a href="/login" class="btn-primary text-sm px-4 py-1.5 inline-block">Sign in</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Page content ───────────────────────────────────────────── -->
+<main class="flex-1">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ── Toast container ───────────────────────────────────────── -->
+<div id="toast-wrap"></div>
+
+<!-- ── Global scripts ─────────────────────────────────────────── -->
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script>
+  // Nav: mark active page, show/hide user info
+  (function() {
+    const page = document.body.dataset.page;
+    document.querySelectorAll('[data-page]').forEach(a => {
+      if (a.dataset.page === page) a.classList.add('active');
+    });
+
+    const user = API.user();
+    if (user) {
+      document.getElementById('nav-user').classList.remove('hidden');
+      document.getElementById('nav-user').classList.add('flex');
+      document.getElementById('nav-guest').classList.add('hidden');
+      document.getElementById('nav-username').textContent = user.username || user.email;
+      if (user.role === 'admin') {
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+      }
+    }
+  })();
+
+  function logout() {
+    API.clearSession();
+    window.location.href = '/login';
+  }
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

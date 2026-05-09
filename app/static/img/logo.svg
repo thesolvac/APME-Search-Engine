@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 68" fill="none">
+  <defs>
+    <linearGradient id="lensGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e8eaf6"/>
+      <stop offset="100%" stop-color="#c0c4f0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Magnifying glass ring -->
+  <circle cx="30" cy="30" r="22" stroke="url(#lensGrad)" stroke-width="3" filter="url(#glow)"/>
+
+  <!-- Inner orbit dashes -->
+  <circle cx="30" cy="30" r="13" fill="none" stroke="#8b5cf6" stroke-width="1.2"
+          stroke-dasharray="3.5 2.5" opacity="0.7"/>
+
+  <!-- Core node -->
+  <circle cx="30" cy="30" r="4.5" fill="url(#lensGrad)" filter="url(#glow)"/>
+
+  <!-- Radial connector lines with endpoint dots -->
+  <line x1="8"  y1="30" x2="17" y2="30" stroke="#00d4ff" stroke-width="1.5"/>
+  <circle cx="6.5" cy="30" r="2.5" fill="#00d4ff" filter="url(#glow)"/>
+
+  <line x1="30" y1="8"  x2="30" y2="17" stroke="#00d4ff" stroke-width="1.5"/>
+  <circle cx="30" cy="6.5" r="2.5" fill="#00d4ff" filter="url(#glow)"/>
+
+  <line x1="43" y1="17" x2="37" y2="23" stroke="#8b5cf6" stroke-width="1.5"/>
+  <circle cx="44.5" cy="15.5" r="2.5" fill="#8b5cf6" filter="url(#glow)"/>
+
+  <!-- Handle -->
+  <line x1="46" y1="46" x2="58" y2="58" stroke="url(#lensGrad)"
+        stroke-width="4.5" stroke-linecap="round" filter="url(#glow)"/>
+
+  <!-- APME wordmark -->
+  <text x="72" y="36" font-family="'Courier New',Courier,monospace"
+        font-size="24" font-weight="bold" fill="url(#textGrad)" letter-spacing="1">APME</text>
+
+  <!-- Tagline -->
+  <text x="73" y="52" font-family="'Courier New',Courier,monospace"
+        font-size="8.5" fill="#6060a0" letter-spacing="3.5">SEARCH ENGINE</text>
+</svg>

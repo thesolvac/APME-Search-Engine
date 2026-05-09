@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — APME{% endblock %}
+
+{% block head %}
+<style>
+  .stat-card { transition:transform .2s,box-shadow .2s; }
+  .stat-card:hover { transform:translateY(-3px); box-shadow:0 0 28px #00d4ff22; }
+  .rec-item { border-left:3px solid var(--c-cyan); background:var(--c-bg3); border-radius:0 8px 8px 0; }
+  .rec-insight { border-left:3px solid var(--c-purple); }
+  .bar-track { background:var(--c-bg3); border-radius:4px; height:8px; overflow:hidden; }
+  .bar-fill  { height:100%; border-radius:4px; transition:width 1s cubic-bezier(.4,0,.2,1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div data-page="dashboard" class="max-w-6xl mx-auto px-6 py-8" id="page">
+
+  <!-- Header -->
+  <div class="mb-8 flex items-start justify-between flex-wrap gap-4">
+    <div>
+      <h1 class="text-2xl font-bold grad-text mb-1" id="welcome-msg">Welcome back</h1>
+      <p class="text-t3 text-sm">Your personal APME analytics dashboard</p>
+    </div>
+    <a href="/search" class="btn-primary px-5 py-2.5 text-sm inline-flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+      </svg>
+      New Search
+    </a>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="stat-grid">
+    <div class="card stat-card p-5">
+      <div class="text-t3 text-xs mb-1 uppercase tracking-wider">Total Searches</div>
+      <div class="text-3xl font-bold text-cyan font-mono skeleton h-9 rounded" id="s-total"></div>
+    </div>
+    <div class="card stat-card p-5">
+      <div class="text-t3 text-xs mb-1 uppercase tracking-wider">Matches Found</div>
+      <div class="text-3xl font-bold text-purple font-mono skeleton h-9 rounded" id="s-matches"></div>
+    </div>
+    <div class="card stat-card p-5">
+      <div class="text-t3 text-xs mb-1 uppercase tracking-wider">Avg Duration</div>
+      <div class="text-3xl font-bold text-emerald font-mono skeleton h-9 rounded" id="s-avg-ms"></div>
+    </div>
+    <div class="card stat-card p-5">
+      <div class="text-t3 text-xs mb-1 uppercase tracking-wider">Top Algorithm</div>
+      <div class="text-xl font-bold font-mono skeleton h-9 rounded" id="s-top-alg"></div>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6 mb-6">
+    <!-- Algorithm breakdown -->
+    <div class="card p-6">
+      <h2 class="text-sm font-semibold text-t2 uppercase tracking-wider mb-4">Algorithm Usage</h2>
+      <div id="alg-chart" class="space-y-3">
+        <div class="skeleton h-6 rounded w-full"></div>
+        <div class="skeleton h-6 rounded w-4/5"></div>
+        <div class="skeleton h-6 rounded w-3/5"></div>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-t2 uppercase tracking-wider">Recommendations</h2>
+        <span class="badge bg-cyan/10 text-cyan border border-cyan/30" id="rec-confidence"></span>
+      </div>
+      <div class="mb-3">
+        <div class="text-xs text-t3 mb-1">Recommended Algorithm</div>
+        <div class="text-lg font-bold font-mono text-cyan skeleton h-7 rounded w-40" id="rec-alg"></div>
+      </div>
+      <div id="rec-tips" class="space-y-2 mb-3"></div>
+      <div id="rec-insights" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <!-- Trending searches -->
+  <div class="card p-6 mb-6">
+    <h2 class="text-sm font-semibold text-t2 uppercase tracking-wider mb-4">Trending Searches</h2>
+    <div class="flex flex-wrap gap-2" id="trending-list">
+      <div class="skeleton h-7 rounded-full w-20"></div>
+      <div class="skeleton h-7 rounded-full w-24"></div>
+      <div class="skeleton h-7 rounded-full w-16"></div>
+    </div>
+  </div>
+
+  <!-- Recent searches -->
+  <div class="card p-6">
+    <h2 class="text-sm font-semibold text-t2 uppercase tracking-wider mb-4">Recent Searches</h2>
+    <div class="overflow-x-auto">
+      <table id="history-table">
+        <thead>
+          <tr>
+            <th>Query</th><th>Algorithm</th><th>Matches</th>
+            <th>Duration</th><th>When</th>
+          </tr>
+        </thead>
+        <tbody id="history-body">
+          <tr><td colspan="5" class="text-center text-t3 py-8">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

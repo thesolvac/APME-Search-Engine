@@ -27,10 +27,12 @@ def create_app() -> Flask:
     from app.routes.admin  import admin_bp
     from app.routes.search import search_bp
     from app.routes.stats  import stats_bp
+    from app.routes.views  import views_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(search_bp)
     app.register_blueprint(stats_bp)
+    app.register_blueprint(views_bp)
 
     # Root health-check
     @app.route("/api/health")

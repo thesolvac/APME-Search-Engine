@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 340" fill="none">
+  <defs>
+    <linearGradient id="hg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0.85"/>
+    </linearGradient>
+    <linearGradient id="hg2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f0f1e"/>
+      <stop offset="100%" stop-color="#1a1a30"/>
+    </linearGradient>
+    <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#2e2e58" opacity="0.6"/>
+    </pattern>
+    <filter id="hglow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="sglow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="520" height="340" fill="url(#hg2)"/>
+  <rect width="520" height="340" fill="url(#dots)"/>
+
+  <!-- Outer search ring -->
+  <circle cx="260" cy="170" r="120" stroke="url(#hg1)" stroke-width="1.5" opacity="0.35"/>
+  <!-- Middle ring -->
+  <circle cx="260" cy="170" r="82"  fill="none" stroke="#8b5cf6" stroke-width="1"
+          stroke-dasharray="6 4" opacity="0.45"/>
+  <!-- Inner ring -->
+  <circle cx="260" cy="170" r="48"  fill="none" stroke="#00d4ff" stroke-width="1"
+          stroke-dasharray="3 5" opacity="0.5"/>
+
+  <!-- Core glow -->
+  <circle cx="260" cy="170" r="18" fill="#8b5cf6" opacity="0.2" filter="url(#sglow)"/>
+  <circle cx="260" cy="170" r="10" fill="url(#hg1)" filter="url(#hglow)"/>
+
+  <!-- Spoke lines to match nodes -->
+  <line x1="260" y1="170" x2="100" y2="80"  stroke="#00d4ff" stroke-width="1.2" opacity="0.5"/>
+  <line x1="260" y1="170" x2="420" y2="75"  stroke="#00d4ff" stroke-width="1.2" opacity="0.5"/>
+  <line x1="260" y1="170" x2="72"  y2="240" stroke="#8b5cf6" stroke-width="1.2" opacity="0.5"/>
+  <line x1="260" y1="170" x2="448" y2="245" stroke="#8b5cf6" stroke-width="1.2" opacity="0.5"/>
+  <line x1="260" y1="170" x2="195" y2="295" stroke="#00d4ff" stroke-width="1.2" opacity="0.4"/>
+  <line x1="260" y1="170" x2="330" y2="300" stroke="#8b5cf6" stroke-width="1.2" opacity="0.4"/>
+
+  <!-- Match node — top-left -->
+  <circle cx="100" cy="80" r="9" fill="#00d4ff" opacity="0.25" filter="url(#sglow)"/>
+  <circle cx="100" cy="80" r="5" fill="#00d4ff" filter="url(#hglow)"/>
+  <text x="115" y="76" font-family="'Courier New',monospace" font-size="9" fill="#00d4ff" opacity="0.8">pos=1024</text>
+  <text x="115" y="88" font-family="'Courier New',monospace" font-size="8" fill="#6060a0">KMP match</text>
+
+  <!-- Match node — top-right -->
+  <circle cx="420" cy="75" r="9" fill="#00d4ff" opacity="0.25" filter="url(#sglow)"/>
+  <circle cx="420" cy="75" r="5" fill="#00d4ff" filter="url(#hglow)"/>
+  <text x="310" y="71" font-family="'Courier New',monospace" font-size="9" fill="#00d4ff" opacity="0.8">pos=8192</text>
+  <text x="318" y="83" font-family="'Courier New',monospace" font-size="8" fill="#6060a0">BM match</text>
+
+  <!-- Match node — left -->
+  <circle cx="72" cy="240" r="9" fill="#8b5cf6" opacity="0.25" filter="url(#sglow)"/>
+  <circle cx="72" cy="240" r="5" fill="#8b5cf6" filter="url(#hglow)"/>
+  <text x="88" y="236" font-family="'Courier New',monospace" font-size="9" fill="#8b5cf6" opacity="0.8">pos=3071</text>
+  <text x="88" y="248" font-family="'Courier New',monospace" font-size="8" fill="#6060a0">AC match</text>
+
+  <!-- Match node — right -->
+  <circle cx="448" cy="245" r="9" fill="#8b5cf6" opacity="0.25" filter="url(#sglow)"/>
+  <circle cx="448" cy="245" r="5" fill="#8b5cf6" filter="url(#hglow)"/>
+  <text x="335" y="241" font-family="'Courier New',monospace" font-size="9" fill="#8b5cf6" opacity="0.8">pos=5540</text>
+  <text x="343" y="253" font-family="'Courier New',monospace" font-size="8" fill="#6060a0">SO match</text>
+
+  <!-- Match node — bottom-left -->
+  <circle cx="195" cy="295" r="7" fill="#00d4ff" opacity="0.2" filter="url(#sglow)"/>
+  <circle cx="195" cy="295" r="4" fill="#10d98a" filter="url(#hglow)"/>
+
+  <!-- Match node — bottom-right -->
+  <circle cx="330" cy="300" r="7" fill="#8b5cf6" opacity="0.2" filter="url(#sglow)"/>
+  <circle cx="330" cy="300" r="4" fill="#10d98a" filter="url(#hglow)"/>
+
+  <!-- Floating code snippets -->
+  <text x="16" y="32"  font-family="'Courier New',monospace" font-size="9" fill="#00d4ff" opacity="0.4">shift_or(data, pat)</text>
+  <text x="360" y="30" font-family="'Courier New',monospace" font-size="9" fill="#8b5cf6" opacity="0.4">aho_corasick()</text>
+  <text x="12"  y="310" font-family="'Courier New',monospace" font-size="9" fill="#8b5cf6" opacity="0.35">boyer_moore(text)</text>
+  <text x="368" y="318" font-family="'Courier New',monospace" font-size="9" fill="#00d4ff" opacity="0.35">kmp_search()</text>
+  <text x="210" y="22" font-family="'Courier New',monospace" font-size="8" fill="#6060a0" opacity="0.6">entropy=4.81</text>
+</svg>

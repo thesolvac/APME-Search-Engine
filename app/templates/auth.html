@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Sign In — APME{% endblock %}
+
+{% block head %}
+<style>
+  .auth-card { background:linear-gradient(145deg,#1a1a30,#12122a); border:1px solid #2e2e50; }
+  .tab-btn   { transition:color .2s,border-color .2s; border-bottom:2px solid transparent; }
+  .tab-btn.active { color:var(--c-cyan); border-bottom-color:var(--c-cyan); }
+  .field-err { color:var(--c-red); font-size:.75rem; margin-top:4px; }
+  .input-wrap input { width:100%; padding:10px 14px; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+  .auth-card { animation:fadeUp .4s ease; }
+  .particle { position:absolute; border-radius:50%; pointer-events:none; animation:float linear infinite; }
+  @keyframes float {
+    0%   { transform:translateY(0)   rotate(0deg);   opacity:.7; }
+    50%  { opacity:.3; }
+    100% { transform:translateY(-100vh) rotate(360deg); opacity:0; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div data-page="login" class="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" id="page">
+  <!-- Animated background particles -->
+  <div id="particles" aria-hidden="true"></div>
+
+  <!-- Hero graphic -->
+  <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none select-none">
+    <img src="{{ url_for('static', filename='img/hero.svg') }}" class="w-full max-w-2xl"/>
+  </div>
+
+  <div class="auth-card rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl">
+    <!-- Logo -->
+    <div class="flex justify-center mb-6">
+      <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="APME" class="h-12"/>
+    </div>
+
+    <!-- Tab switcher -->
+    <div class="flex border-b border-[#2e2e50] mb-6 gap-6">
+      <button class="tab-btn active pb-3 text-sm font-semibold" id="tab-login"
+              onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn pb-3 text-sm font-semibold text-t2" id="tab-register"
+              onclick="switchTab('register')">Create Account</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form id="form-login" onsubmit="doLogin(event)" novalidate>
+      <div class="space-y-4">
+        <div class="input-wrap">
+          <label class="text-xs text-t2 mb-1 block">Email</label>
+          <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/>
+          <div class="field-err hidden" id="login-email-err"></div>
+        </div>
+        <div class="input-wrap">
+          <label class="text-xs text-t2 mb-1 block">Password</label>
+          <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+          <div class="field-err hidden" id="login-pass-err"></div>
+        </div>
+        <div class="field-err hidden text-center" id="login-general-err"></div>
+        <button type="submit" class="btn-primary w-full py-2.5 text-sm" id="login-btn">
+          Sign In
+        </button>
+      </div>
+    </form>
+
+    <!-- REGISTER FORM -->
+    <form id="form-register" class="hidden" onsubmit="doRegister(event)" novalidate>
+      <div class="space-y-4">
+        <div class="input-wrap">
+          <label class="text-xs text-t2 mb-1 block">Username</label>
+          <input type="text" id="reg-username" placeholder="adar_dev" autocomplete="username"/>
+          <div class="field-err hidden" id="reg-username-err"></div>
+        </div>
+        <div class="input-wrap">
+          <label class="text-xs text-t2 mb-1 block">Email</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email"/>
+          <div class="field-err hidden" id="reg-email-err"></div>
+        </div>
+        <div class="input-wrap">
+          <label class="text-xs text-t2 mb-1 block">Password</label>
+          <input type="password" id="reg-pass" placeholder="Min 8 chars, 1 uppercase, 1 digit"
+                 autocomplete="new-password"/>
+          <div class="field-err hidden" id="reg-pass-err"></div>
+        </div>
+        <div class="input-wrap">
+          <label class="text-xs text-t2 mb-1 block">Confirm Password</label>
+          <input type="password" id="reg-pass2" placeholder="••••••••" autocomplete="new-password"/>
+          <div class="field-err hidden" id="reg-pass2-err"></div>
+        </div>
+        <div class="field-err hidden text-center" id="reg-general-err"></div>
+        <button type="submit" class="btn-primary w-full py-2.5 text-sm" id="reg-btn">
+          Create Account
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Results — APME{% endblock %}
+
+{% block head %}
+<style>
+  .match-highlight {
+    background:linear-gradient(135deg,#ffd16688,#ff9a3c66);
+    color:#ffd166; border-radius:3px; padding:0 2px;
+    outline:2px solid transparent; transition:outline .15s;
+  }
+  .match-highlight.current { outline:2px solid #ffd166; background:#ffd16644; }
+  .text-viewer {
+    font-family:monospace; font-size:.85rem; line-height:1.9;
+    white-space:pre-wrap; word-break:break-all;
+    max-height:420px; overflow-y:auto;
+  }
+  .ner-chip {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 10px; border-radius:20px; font-size:.72rem; font-weight:600;
+    font-family:monospace; border:1px solid;
+  }
+  .bar-cmp { height:12px; border-radius:4px; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
+  .pos-badge {
+    display:inline-block; font-family:monospace; font-size:.7rem;
+    padding:2px 7px; border-radius:4px; background:var(--c-bg3);
+    border:1px solid var(--c-border); color:var(--c-t2); cursor:pointer;
+    transition:border-color .15s;
+  }
+  .pos-badge:hover { border-color:var(--c-cyan); color:var(--c-cyan); }
+  @keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+  .slide-in { animation:slideIn .4s ease; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div data-page="results" class="max-w-6xl mx-auto px-6 py-8" id="page">
+
+  <!-- Back + header -->
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+    <div class="flex items-center gap-3">
+      <a href="/search" class="btn-ghost px-3 py-1.5 text-sm inline-flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>Back
+      </a>
+      <h1 class="text-xl font-bold">Search Results</h1>
+    </div>
+    <button onclick="exportResults()" class="btn-ghost px-3 py-1.5 text-sm inline-flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+      </svg>Export JSON
+    </button>
+  </div>
+
+  <!-- Summary ribbon -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="summary-row">
+    <div class="card p-4">
+      <div class="text-t3 text-xs mb-1">Matches</div>
+      <div class="text-2xl font-bold text-cyan font-mono" id="r-count">—</div>
+    </div>
+    <div class="card p-4">
+      <div class="text-t3 text-xs mb-1">Algorithm</div>
+      <div class="text-lg font-bold font-mono" id="r-alg">—</div>
+    </div>
+    <div class="card p-4">
+      <div class="text-t3 text-xs mb-1">Duration</div>
+      <div class="text-2xl font-bold text-emerald font-mono" id="r-dur">—</div>
+    </div>
+    <div class="card p-4">
+      <div class="text-t3 text-xs mb-1">Text Size</div>
+      <div class="text-2xl font-bold text-purple font-mono" id="r-size">—</div>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6 mb-6">
+
+    <!-- Text viewer with highlights -->
+    <div class="md:col-span-2 card p-5 slide-in">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold text-t2 uppercase tracking-wider">Highlighted Text</h2>
+        <div class="flex items-center gap-2" id="nav-controls">
+          <button onclick="prevMatch()" class="btn-ghost px-2 py-1 text-xs">&#8593; Prev</button>
+          <span class="text-xs text-t3 font-mono" id="match-counter">0 / 0</span>
+          <button onclick="nextMatch()" class="btn-ghost px-2 py-1 text-xs">&#8595; Next</button>
+        </div>
+      </div>
+      <div class="text-viewer bg-bg3 rounded-lg p-4" id="text-viewer">
+        <span class="text-t3 text-sm">Loading…</span>
+      </div>
+
+      <!-- Match positions -->
+      <div class="mt-4">
+        <div class="text-xs text-t3 mb-2 uppercase tracking-wider">Match Positions (byte offsets)</div>
+        <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto" id="positions-list"></div>
+      </div>
+    </div>
+
+    <!-- NER panel -->
+    <div class="card p-5 slide-in">
+      <h2 class="text-sm font-semibold text-t2 uppercase tracking-wider mb-4">Detected Entities</h2>
+      <div id="ner-panel" class="space-y-2">
+        <span class="text-t3 text-sm">No entities yet…</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparative analytics -->
+  <div class="card p-6 slide-in">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-sm font-semibold text-t2 uppercase tracking-wider">Algorithm Comparison</h2>
+      <span class="text-xs text-t3" id="cmp-status">Loading comparison…</span>
+    </div>
+    <div id="cmp-chart" class="space-y-4">
+      <div class="skeleton h-8 rounded w-full"></div>
+      <div class="skeleton h-8 rounded w-4/5"></div>
+      <div class="skeleton h-8 rounded w-3/5"></div>
+      <div class="skeleton h-8 rounded w-2/3"></div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/results.js') }}"></script>
+{% endblock %}
