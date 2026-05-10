@@ -102,10 +102,8 @@ async function loadTrending() {
 
 // ── Recent history ────────────────────────────────────────────────────────────
 async function loadHistory() {
-  const res = await API.get('/admin/search-history');   // admin endpoint for full history
+  const res  = await API.get('/search/history?limit=20');
   const body = document.getElementById('history-body');
-  // Fall back to user stats which includes counts but not individual rows —
-  // attempt admin endpoint; if 403 show placeholder
   if (!res || res.status === 'error') {
     body.innerHTML = '<tr><td colspan="5" class="text-center text-t3 py-6">History unavailable.</td></tr>';
     return;

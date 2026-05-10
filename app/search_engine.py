@@ -114,25 +114,33 @@ class APMESearchEngine:
 
     def search(
         self,
-        source:    str | bytes | Path,
-        pattern:   str | bytes,
-        algorithm: str = "AUTO",
-        user_id:   str = "",
-        fuzzy:     bool = False,
+        source:     str | bytes | Path,
+        pattern:    str | bytes,
+        algorithm:  str = "AUTO",
+        user_id:    str = "",
+        fuzzy:      bool = False,
         max_errors: int = 1,
+        enrich_ner: bool | None = None,
     ) -> dict:
         """
         Universal search entry point.
 
         Parameters
         ----------
-        source    : file path (str/Path) OR raw text (bytes/str)
-        pattern   : search pattern
-        algorithm : 'AUTO' lets the heuristic choose; or specify one explicitly
-        user_id   : for search-history logging
-        fuzzy     : use approximate matching (ignores algorithm)
-        max_errors: edit-distance budget for fuzzy search
+        source     : file path (str/Path) OR raw text (bytes/str)
+        pattern    : search pattern
+        algorithm  : 'AUTO' lets the heuristic choose; or specify one explicitly
+        user_id    : for search-history logging
+        fuzzy      : use approximate matching (ignores algorithm choice)
+        max_errors : edit-distance budget for fuzzy search
+        enrich_ner : per-call NER enrichment override.  If None, falls back to
+                     the value set at engine construction time (``self.enrich_ner``).
+                     Passing True/False here lets callers control enrichment without
+                     recreating the singleton engine.
         """
+        # Resolve per-call enrich override
+        do_enrich = self.enrich_ner if enrich_ner is None else enrich_ner
+
         pat_bytes  = pattern.encode("utf-8") if isinstance(pattern, str) else pattern
         is_file    = isinstance(source, (str, Path)) and os.path.isfile(str(source))
         text_str   = None   # decoded text (for NER enrichment)
@@ -161,7 +169,7 @@ class APMESearchEngine:
             result = _w.search_fuzzy(data, pat_bytes, max_errors=max_errors)
             out = _make_result(
                 result.matches, result.duration_ms, result.algorithm,
-                len(pat_bytes), text_str, self.enrich_ner, self.max_enrich,
+                len(pat_bytes), text_str, do_enrich, self.max_enrich,
             )
             self._log(out, pat_bytes, [source_label], user_id, file_size)
             return out
@@ -192,7 +200,7 @@ class APMESearchEngine:
 
         out = _make_result(
             matches, duration_ms, alg,
-            len(pat_bytes), text_str, self.enrich_ner, self.max_enrich,
+            len(pat_bytes), text_str, do_enrich, self.max_enrich,
         )
         out["algorithm_note"] = out_alg_note
         self._log(out, pat_bytes, [source_label], user_id, file_size)

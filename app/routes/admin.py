@@ -16,10 +16,11 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/api/admin")
 @admin_bp.route("/users", methods=["GET"])
 @admin_required
 def list_users():
-    skip = int(request.args.get("skip", 0))
+    skip  = int(request.args.get("skip", 0))
     limit = min(int(request.args.get("limit", 50)), 200)
     users = UserModel.find_all(skip=skip, limit=limit)
-    return success({"users": [UserModel.serialize(u) for u in users]})
+    total = UserModel._col().count_documents({})
+    return success({"users": [UserModel.serialize(u) for u in users], "total": total})
 
 
 @admin_bp.route("/users", methods=["POST"])
@@ -73,6 +74,14 @@ def update_user(user_id: str):
 
     allowed_fields = {"username", "email", "role", "is_active"}
     fields = {k: v for k, v in data.items() if k in allowed_fields}
+
+    # Password change: hash it before passing to the model
+    new_password = (data.get("password") or "").strip()
+    if new_password:
+        ok, msg = validate_password(new_password)
+        if not ok:
+            return error(msg)
+        fields["password_hash"] = UserModel.hash_password(new_password)
 
     if not fields:
         return error("No valid fields provided for update.")

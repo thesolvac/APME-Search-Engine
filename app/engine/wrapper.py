@@ -44,6 +44,14 @@ def _make_buf(n: int) -> ctypes.Array:
     return (ctypes.c_int * n)()
 
 
+_ALG_LABELS: dict[str, str] = {
+    "apme_kmp":          "KMP",
+    "apme_boyer_moore":  "Boyer-Moore",
+    "apme_rabin_karp":   "Rabin-Karp",
+    "apme_shift_or":     "Shift-Or",
+}
+
+
 def _call_single(fn_name: str, text_b: bytes, pat_b: bytes) -> SearchResult:
     lib = get_lib()
     fn  = getattr(lib, fn_name)
@@ -58,9 +66,9 @@ def _call_single(fn_name: str, text_b: bytes, pat_b: bytes) -> SearchResult:
     if count < 0:
         raise MemoryError(f"{fn_name}: C allocation failed")
 
-    filled   = min(count, MAX_RESULTS)
-    matches  = list(buf[:filled])
-    label    = fn_name.replace("apme_", "").replace("_", "-").upper()
+    filled  = min(count, MAX_RESULTS)
+    matches = list(buf[:filled])
+    label   = _ALG_LABELS.get(fn_name, fn_name.replace("apme_", "").upper())
     return SearchResult(matches, dur.value, label, count)
 
 

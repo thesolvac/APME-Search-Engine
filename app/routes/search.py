@@ -6,6 +6,7 @@ POST /file          upload a text file and search it
 POST /multi         multi-pattern Aho-Corasick search
 POST /compare       run all algorithms in parallel, return timing comparison
 GET  /autocomplete  query-prefix autocomplete from search history
+GET  /history       current user's own search history (paginated)
 """
 
 from __future__ import annotations
@@ -67,13 +68,16 @@ def search_text():
         return error("'pattern' is required", 400)
 
     user_id = get_jwt_identity()
-    engine  = get_engine(enable_db=True, parallel=True, enrich_ner=enrich)
+    # Use the module singleton (enable_db=True by default) and override enrich
+    # per-call so the singleton's construction-time setting does not matter.
+    engine  = get_engine(enable_db=True, parallel=True)
     result  = engine.search(
         text, pattern,
         algorithm=algorithm,
         user_id=user_id,
         fuzzy=fuzzy,
         max_errors=max_errors,
+        enrich_ner=enrich,
     )
     return success(result, "Search complete")
 
@@ -230,3 +234,17 @@ def autocomplete():
     user_id     = get_jwt_identity() if scope == "me" else ""
     suggestions = SearchHistoryModel.autocomplete(q, user_id=user_id, limit=limit)
     return success(suggestions, f"{len(suggestions)} suggestion(s)")
+
+
+@search_bp.get("/history")
+@login_required
+def user_history():
+    """Return the current user's own search history (newest first)."""
+    user_id = get_jwt_identity()
+    skip    = int(request.args.get("skip", 0))
+    limit   = min(int(request.args.get("limit", 30)), 100)
+    records = SearchHistoryModel.find_by_user(user_id, skip=skip, limit=limit)
+    return success(
+        {"records": [SearchHistoryModel.serialize(r) for r in records]},
+        f"{len(records)} record(s)",
+    )
