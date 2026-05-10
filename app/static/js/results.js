@@ -3,7 +3,14 @@ if (!API.requireAuth()) throw 0;
 const ALG_COLOURS = {
   'KMP':'#00d4ff','Boyer-Moore':'#8b5cf6','Rabin-Karp':'#ffd166',
   'Shift-Or':'#10d98a','Aho-Corasick':'#ff9a3c','AUTO':'#ff4d6d',
+  'Fuzzy':'#c084fc','Fuzzy (k=1)':'#c084fc',
 };
+
+function algColour(name) {
+  if (!name) return '#9090bb';
+  if (name.startsWith('FUZZY') || name === 'Fuzzy') return '#c084fc';
+  return ALG_COLOURS[name] || '#9090bb';
+}
 const NER_COLOURS = {
   DATE:'#00d4ff',TIME:'#10d98a',EMAIL:'#8b5cf6',PHONE:'#ff9a3c',
   IP_ADDRESS:'#ffd166',URL:'#c084fc',HASHTAG:'#fb7185',MENTION:'#34d399',
@@ -40,7 +47,7 @@ function populateSummary() {
   const algEl = document.getElementById('r-alg');
   const alg   = result.algorithm || '—';
   algEl.textContent = alg;
-  algEl.style.color = ALG_COLOURS[alg] || '#9090bb';
+  algEl.style.color = algColour(alg);
 
   document.getElementById('r-dur').textContent  = fmtMs(result.duration_ms);
   document.getElementById('r-size').textContent =
@@ -207,7 +214,7 @@ async function loadComparison() {
   const chart = document.getElementById('cmp-chart');
   chart.innerHTML = entries.map(([name, stats]) => {
     const pct      = Math.round(stats.duration_ms / maxMs * 100);
-    const col      = ALG_COLOURS[name] || '#9090bb';
+    const col      = algColour(name);
     const isUsed   = name === autoAlg;
     const isFastest= name === fastest;
     const isAuto   = name === auto_selected;

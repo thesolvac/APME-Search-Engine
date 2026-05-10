@@ -44,6 +44,25 @@ _ALG_FNS = {
 }
 
 
+def _aho_single(text: bytes, pat: bytes) -> _w.SearchResult:
+    """Wrap Aho-Corasick for single-pattern comparison use."""
+    results = _w.search_aho_corasick(text, [pat])
+    key = pat.decode("utf-8", errors="replace")
+    return results.get(key) or _w.SearchResult([], 0.0, "Aho-Corasick", 0)
+
+
+def _fuzzy_k1(text: bytes, pat: bytes) -> _w.SearchResult:
+    """Wrap fuzzy search with k=1 for comparison use."""
+    return _w.search_fuzzy(text, pat, max_errors=1)
+
+
+_ALL_ALG_FNS = {
+    **_ALG_FNS,
+    "Aho-Corasick": _aho_single,
+    "Fuzzy (k=1)":  _fuzzy_k1,
+}
+
+
 def _allowed_file(filename: str) -> bool:
     return Path(filename).suffix.lower() in _ALLOWED_EXTENSIONS
 
@@ -198,8 +217,8 @@ def compare_algorithms():
         }
 
     comparison: dict[str, dict] = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-        futs = {pool.submit(_run, name, fn): name for name, fn in _ALG_FNS.items()}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+        futs = {pool.submit(_run, name, fn): name for name, fn in _ALL_ALG_FNS.items()}
         for fut in concurrent.futures.as_completed(futs):
             name, stats = fut.result()
             comparison[name] = stats

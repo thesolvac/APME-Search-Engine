@@ -183,20 +183,40 @@ class APMESearchEngine:
             out_alg_note = "manual"
 
         # ── Execute search ───────────────────────────────────────────────────
-        if is_file:
+        # Aho-Corasick and Fuzzy have unique call signatures; handle before
+        # the generic parallel/streaming dispatch which only covers the four
+        # exact single-pattern algorithms.
+        if alg == "Aho-Corasick":
+            if is_file:
+                with open(file_path, "rb") as fh:
+                    data = fh.read()
+            key = pat_bytes.decode("utf-8", errors="replace")
+            ac_res = _w.search_aho_corasick(data, [pat_bytes])
+            sr = ac_res.get(key) or _w.SearchResult([], 0.0, "Aho-Corasick", 0)
+            matches     = sr.matches
+            duration_ms = sr.duration_ms
+            alg         = "Aho-Corasick"
+        elif alg == "Fuzzy":
+            if is_file:
+                with open(file_path, "rb") as fh:
+                    data = fh.read()
+            sr = _w.search_fuzzy(data, pat_bytes, max_errors=max_errors)
+            matches     = sr.matches
+            duration_ms = sr.duration_ms
+            alg         = sr.algorithm          # "FUZZY(k=N)"
+        elif is_file:
             pr = search_large_file(file_path, pat_bytes, alg)
             matches     = pr.matches
             duration_ms = pr.duration_ms
+        elif self.parallel and file_size > 1 * 1024 * 1024:
+            pr = self._threaded.search(data, pat_bytes, alg)
+            matches     = pr.matches
+            duration_ms = pr.duration_ms
         else:
-            if self.parallel and file_size > 1 * 1024 * 1024:
-                pr = self._threaded.search(data, pat_bytes, alg)
-                matches     = pr.matches
-                duration_ms = pr.duration_ms
-            else:
-                fn = _ALG_FN.get(alg, _ALG_FN["Boyer-Moore"])
-                sr = fn(data, pat_bytes)
-                matches     = sr.matches
-                duration_ms = sr.duration_ms
+            fn = _ALG_FN.get(alg, _ALG_FN["Boyer-Moore"])
+            sr = fn(data, pat_bytes)
+            matches     = sr.matches
+            duration_ms = sr.duration_ms
 
         out = _make_result(
             matches, duration_ms, alg,

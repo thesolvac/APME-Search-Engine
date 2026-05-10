@@ -126,28 +126,25 @@
       </select>
     </div>
 
-    <!-- Algorithm pills -->
-    <div class="flex flex-wrap gap-2 mb-4">
+    <!-- Algorithm pills (hidden in multi-pattern mode) -->
+    <div class="flex flex-wrap gap-2 mb-4" id="alg-pill-row">
       <span class="text-xs text-t3 self-center mr-1">Algorithm:</span>
-      <button class="alg-pill active" data-alg="AUTO"         onclick="setAlg(this)">AUTO</button>
-      <button class="alg-pill"        data-alg="KMP"          onclick="setAlg(this)">KMP</button>
-      <button class="alg-pill"        data-alg="Boyer-Moore"  onclick="setAlg(this)">Boyer-Moore</button>
-      <button class="alg-pill"        data-alg="Rabin-Karp"   onclick="setAlg(this)">Rabin-Karp</button>
-      <button class="alg-pill"        data-alg="Shift-Or"     onclick="setAlg(this)">Shift-Or</button>
+      <button class="alg-pill active" data-alg="AUTO"          onclick="setAlg(this)">AUTO</button>
+      <button class="alg-pill"        data-alg="KMP"           onclick="setAlg(this)">KMP</button>
+      <button class="alg-pill"        data-alg="Boyer-Moore"   onclick="setAlg(this)">Boyer-Moore</button>
+      <button class="alg-pill"        data-alg="Rabin-Karp"    onclick="setAlg(this)">Rabin-Karp</button>
+      <button class="alg-pill"        data-alg="Shift-Or"      onclick="setAlg(this)">Shift-Or</button>
+      <button class="alg-pill"        data-alg="Aho-Corasick"  onclick="setAlg(this)">Aho-Corasick</button>
+      <button class="alg-pill"        data-alg="Fuzzy"         onclick="setAlg(this)">Fuzzy</button>
     </div>
 
-    <!-- Fuzzy toggle -->
-    <label class="flex items-center gap-2 mb-5 cursor-pointer w-fit">
-      <div class="relative">
-        <input type="checkbox" id="fuzzy-toggle" class="sr-only peer"/>
-        <div class="w-10 h-5 bg-bg3 border border-[#2e2e50] rounded-full peer
-                    peer-checked:bg-purple/40 transition-colors"></div>
-        <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-t3 rounded-full
-                    peer-checked:translate-x-5 peer-checked:bg-purple transition-all"></div>
-      </div>
-      <span class="text-sm text-t2">Fuzzy match</span>
-      <span class="text-xs text-t3">(1 edit distance)</span>
-    </label>
+    <!-- Fuzzy options (shown only when Fuzzy pill is active) -->
+    <div id="fuzzy-opts" class="hidden flex items-center gap-3 mb-4">
+      <span class="text-sm text-t2">Max edit distance:</span>
+      <input type="number" id="max-errors-input" value="1" min="0" max="5"
+             class="w-20 px-3 py-1.5 text-sm text-center"/>
+      <span class="text-xs text-t3">0 = exact  ·  1–5 = approximate</span>
+    </div>
 
     <!-- Search button -->
     <button onclick="doSearch()" id="search-btn"

@@ -20,6 +20,9 @@ function setMode(mode) {
     document.getElementById('mode-' + m).classList.toggle('active', m === mode);
   });
   document.getElementById('pattern-row').classList.toggle('hidden', mode === 'multi');
+  // Pills are irrelevant in multi-pattern mode (always Aho-Corasick)
+  document.getElementById('alg-pill-row').classList.toggle('hidden', mode === 'multi');
+  document.getElementById('fuzzy-opts').classList.add('hidden');
 }
 
 // ── Algorithm pill selection ──────────────────────────────────────────────────
@@ -27,6 +30,8 @@ function setAlg(btn) {
   document.querySelectorAll('.alg-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   selectedAlg = btn.dataset.alg;
+  // Show max-errors control only when Fuzzy is selected
+  document.getElementById('fuzzy-opts').classList.toggle('hidden', selectedAlg !== 'Fuzzy');
 }
 
 // ── File drag-and-drop ────────────────────────────────────────────────────────
@@ -92,8 +97,13 @@ function useTrend(q) {
 
 // ── Search ────────────────────────────────────────────────────────────────────
 async function doSearch() {
-  const btn   = document.getElementById('search-btn');
-  const fuzzy = document.getElementById('fuzzy-toggle').checked;
+  const btn       = document.getElementById('search-btn');
+  const isFuzzy   = selectedAlg === 'Fuzzy';
+  const maxErrors = isFuzzy
+    ? Math.max(0, Math.min(5, parseInt(document.getElementById('max-errors-input').value, 10) || 1))
+    : 1;
+  // When Fuzzy pill is active: send algorithm=AUTO so the engine uses the fuzzy path
+  const algToSend = isFuzzy ? 'AUTO' : selectedAlg;
 
   // Collect inputs based on mode
   let payload, endpoint, isForm = false;
@@ -104,7 +114,7 @@ async function doSearch() {
     if (!text)    { showToast('Enter text to search.', 'warn'); return; }
     if (!pattern) { showToast('Enter a search pattern.', 'warn'); return; }
     endpoint = '/search/text';
-    payload  = { text, pattern, algorithm: selectedAlg, fuzzy, enrich: true };
+    payload  = { text, pattern, algorithm: algToSend, fuzzy: isFuzzy, max_errors: maxErrors, enrich: true };
 
   } else if (currentMode === 'file') {
     const pattern = document.getElementById('pattern-input').value.trim();
@@ -114,8 +124,9 @@ async function doSearch() {
     const fd = new FormData();
     fd.append('file', selectedFile);
     fd.append('pattern', pattern);
-    fd.append('algorithm', selectedAlg);
-    fd.append('fuzzy', fuzzy ? 'true' : 'false');
+    fd.append('algorithm', algToSend);
+    fd.append('fuzzy', isFuzzy ? 'true' : 'false');
+    fd.append('max_errors', maxErrors);
     payload  = fd;
     isForm   = true;
 

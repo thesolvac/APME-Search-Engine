@@ -8,10 +8,15 @@ if (user) {
 
 const ALG_COLOURS = {
   'KMP':'#00d4ff','Boyer-Moore':'#8b5cf6','Rabin-Karp':'#ffd166',
-  'Shift-Or':'#10d98a','Aho-Corasick':'#ff9a3c','AUTO':'#ff4d6d','Fuzzy':'#c084fc',
+  'Shift-Or':'#10d98a','Aho-Corasick':'#ff9a3c','AUTO':'#ff4d6d',
+  'Fuzzy':'#c084fc','Fuzzy (k=1)':'#c084fc',
 };
 
-function algColour(name) { return ALG_COLOURS[name] || '#9090bb'; }
+function algColour(name) {
+  if (!name) return '#9090bb';
+  if (name.startsWith('FUZZY') || name === 'Fuzzy') return '#c084fc';
+  return ALG_COLOURS[name] || '#9090bb';
+}
 
 // ── Stat cards ────────────────────────────────────────────────────────────────
 async function loadStats() {
